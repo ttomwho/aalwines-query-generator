@@ -1,0 +1,122 @@
+Input: Can a packet traverse three or more hops?
+REGEX: <.*> ...(.)* <.*> 0
+
+Input: Can a packet traverse two or more hops?
+REGEX: <.*> ..(.)* <.*> 0
+
+Input: Can a packet with the start label 540 traverse six or more hops?
+REGEX: <540> ......(.)* <.*> 0
+
+Input: Can a packet traverse exactly seven hops?
+REGEX: <.*> ....... <.*> 0
+
+Input: Can a packet traverse five or more hops?
+REGEX: <.*> .....(.)* <.*> 0
+
+Input: Can a packet traverse exactly five hops?
+REGEX: <.*> ..... <.*> 0
+
+Input: Find a path from v0 to v3 with 0 failures
+REGEX: <.*> [.#v0] .* [v3#.] <.*> 0
+
+Input: Allow routing from R1 to R2 with at most 1 link failure
+REGEX: <.*> [.#R1] .* [R2#.] <.*> 1
+
+Input: Find a path starting in v1 with s40 label and ending in v3 with any MPLS label
+REGEX: <40 .> [.#v1] .* [v3#.] <.*> 0
+
+Input: Find a path from R0 to R2 with max 1 failure
+REGEX: <.*> [.#R0] .* [R2#.] <.*> 1
+
+Input: Check if service label s40 from R0 to R3 can reach without leaking MPLS?
+REGEX: <40> [.#R0] .* [R3#.] <> 0
+
+Input: Allow routing from v1 to v3 with 2 possible failures
+REGEX: <.*> [.#v1] .* [v3#.] <.*> 2
+
+Input: Can a packet reach router v3 from router v0 without any link failures?
+REGEX: <.*> [.#v0] .* [v3#.] <.*> 0
+
+Input: Check if a packet arriving at router A with service label 234 can be routed through router F to router B without any link failures.
+REGEX: <234> [.#A] .* [.#F] .* [B#.] <.> 0
+
+Input: Check whether a packet with label 234 can traverse three or more hops without any link failures.
+REGEX: <234> ...(.)* <.> 0
+
+Input: Evaluate whether a packet with service label 65 can traverse at least five hops when there is at most one link failure.
+REGEX: <65> .....(.)* <.> 1
+
+Input: Verify whether the service label 800 could be popped (removed from the stack) under the scenario of at most one link failure.
+REGEX: <800> .* <[^800] .*> 1
+
+Input: Can a packet from R1 to R9 be forwarded, but only if it passes through R4?
+REGEX: <.*> [.#R1] .* [.#R4] .* [R9#.] <.*> 0
+
+Input: Is there a way for a packet to travel from R3 to R7 without passing through R6?
+REGEX: <.*> [.#R3] [^.#R6]* [R7#.] <.*> 0
+
+Input: Could a packet entering at R10 leak an internal MPLS label when exiting at R12?
+REGEX: <.*> [.#R10] .* [R12#.] <.+> 1
+
+Input: Can a packet from Perth to Melbourne go through Brisbane?
+REGEX: <.*> [.#Perth] .* [.#Brisbane] .* [Melbourne#.] <.*> 0
+
+Input: Can label 50550 be removed by the time the packet leaves?
+REGEX: <50550 .*> .* <[^50550] .*> 0
+
+Input: Can label 3 be preserved with one link failure?
+REGEX: <3> .* <3> 1
+
+Input: Can label 10 be preserved with no link failure?
+REGEX: <10> .* <10> 0
+
+Input: Can a packet avoid passing through Frankfurt while reaching Dublin from London?
+REGEX: <.*> [.#London] [^.#Frankfurt]* [Dublin#.] <.*> 0
+
+Input: Can a packet avoid passing through the link Frankfurt Berlin while reaching Dublin from London?
+REGEX: <.*> [.#London] [^Frankfurt#Berlin]* [Dublin#.] <.*> 0
+
+Input: Find a route to A that does not go through B.
+REGEX: <.*> .* [^.#B]* [A#.] <.*> 0
+
+Input: Can a packet with label 10 and 500 traverse two or more hops?
+REGEX: <10 500> ..(.)* <.*> 0
+
+Input: Check if label 10 traffic from A can reach B with no failures.
+REGEX: <10> [.#A] .* [B#.] <.*> 0
+
+Input: Find a path from R3 to R7 without going through R6 and with maximum of 2 link failures.
+REGEX: <.*> [.#R3] [^.#R6]* [R7#.] <.*> 2
+
+Input: Check for a path that goes from v1 to v5 without going through v2 and v3 and v4.
+REGEX: <.*> [.#v1] [^.#v2, .#v3, .#v4]* [v5#.] <.*> 2
+
+Input: Is the router V0 connected to the router V3 not through the link V2 to V3 using MPLS label-switching path for up to 1 failed link?
+REGEX: <.*> [.#V0] [^V2#V3]* [V3#.] <.*> 1
+
+Input: Can a packet arriving with the service label s40 on router V0 be connected to the router V3 using MPLS label-switching path?
+REGEX: <40> [.#V0] .* [V3#.] <.*> 0
+
+Input: Can a packet arriving with the service label s10 on router V0 be connected to the router V3 using MPLS label-switching path without leaking any labels?
+REGEX: <10> [.#V0] .* [V3#.] <> 0
+
+Input: Transparency check if a packet arriving to R1 with the service label s50 on top of the IP reach router R5 with at least one MPLS label on top of the SMPLS label, all assuming up to a single link failure
+REGEX: <50> [.#R1] .* [R5#.] <.+ .> 1
+
+Input: Can a packet pass through a loop that includes the router Turner, with up to one link failure allowed?
+REGEX: <.*> [.#Turner] .+ [Turner#.] <.*> 1
+
+Input: Check if a packet can reach router V4 without passing through V0 or V1.
+REGEX: <.*> [^.#V0,.#V1]* [.#V4] <.*> 0
+
+Input: Can a packet with top label 20 reach R3 without going through R1 along the way?
+REGEX: <20 .*> [^.#R1]* [.#R3] <.*> 0
+
+Input: Verify whether any packet can loop through router Germany.
+REGEX: <.*> [.#Germany] .+ [Germany#.] <.*> 0
+
+Input: Check if a packet entering at r1 ever exits the network with more than one label still on the stack.
+REGEX: <.*> [.#r1] .* <.+ .> 0
+
+Input: Is there a way for a packet with top label 1 to travel to router V0 with no link failure?
+REGEX: <1 .*> .* [.#V0] <.*>

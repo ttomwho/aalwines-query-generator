@@ -1,0 +1,1 @@
+<.*> [.#Sydney1] .* [Canberra2#.] <.*> 1 DUAL
