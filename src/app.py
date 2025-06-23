@@ -37,6 +37,12 @@ if student_id and selected_file:
         st.error(f"Failed to load model: {e}")
         st.stop()
 
+    with st.expander("📍 Show available router names"):
+        st.write(", ".join(model.routers))
+
+    with st.expander("🏷️ Show available MPLS labels"):
+        st.write(", ".join(model.labels))
+
     # --- Query Description ---
     st.markdown("### Describe your query:")
     description = st.text_area("Example: Find a path from R0 to R3 with at most one link failure.", height=100)
