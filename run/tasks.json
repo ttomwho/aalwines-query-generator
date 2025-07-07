@@ -1,0 +1,12 @@
+[
+    {"task": "Aarnet: Write a query that finds a path from Sydney1 to Perth1 with at most one link failure.", "solution": "<.*> [.#Sydney1] .* [Perth1#.] <.*> 1", "model": "Aarnet_Gen_1.json"},
+    {"task": "DemoNet: Which query receives any path from V0 to V3 with 0 link failures.", "solution": "<.*> [.#V0] .* [V3#.] <.*> 0", "model": "_DemoNet_.json"},
+    {"task": "DemoNet: Write a query to check if there is a possible path out of router V3.", "solution": "<.*> [V3#.] .* <.*> 0", "model": "_DemoNet_.json"},
+    {"task": "Write a query to check if a packet can traverse three or more hops?", "solution": "<.*> ...(.)* <.*> 0", "model": "_DemoNet_.json"},
+    {"task": "DemoNet: Write a query to check if a packet with the start label 10 can traverse six or more hops?", "solution": "<10> ......(.)* <.*> 0", "model": "_DemoNet_.json"},
+    {"task": "DemoNet: Write a query to find any routing path from V1 to V3 with at most 1 link failure.", "solution": "<.*> [.#V1] .* [V3#.] <.*> 1", "model": "_DemoNet_.json"},
+    {"task": "DemoNet: Write a query to verify if a packet can be forwarded from V2 to V4 if it has to pass through V3?", "solution": "<.*> [.#V2] .* [.#V3] .* [V4#.] <.*> 0", "model": "_DemoNet_.json"},
+    {"task": "DemoNet: Write a query to verify if a packet with top label 20 can reach V3 without going through V1?", "solution": "<20 .*> [^.#V1]* [.#V3] <.*> 0", "model": "_DemoNet_.json"},
+    {"task": "Aarnet: Write a query to check whether a packet with start labels 3 and 50527 loops through router V1.", "solution": "<50527> [V1#.] .+ [.#V1] <.*> 0", "model": "Aarnet_Gen_1.json"},
+    {"task": "Aarnet: Write a query to check whether the label 3 can be used in Sydney1 to do a lookup.", "solution": "<3> [.#Sydney1] .* <.*> 0", "model": "Aarnet_Gen_1.json"}
+]

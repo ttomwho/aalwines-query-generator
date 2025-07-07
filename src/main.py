@@ -32,9 +32,9 @@ def run_aalwines(query: str, network_path: str, weight_path: str, query_path: st
     # AalWiNes binary inside WSL
     aalwines_bin = get_aalwines_bin()
     command = f"wsl {aalwines_bin} --input {network_path_wsl} -w {weight_path_wsl} -q {query_path_wsl} --trace 1 -e 1"
-    print(command)
+    
     result = subprocess.run(command, capture_output=True, text=True, shell=True)
-    print(f"Running command: {command}")
+    
     if result.returncode == 0:
         trace_output = result.stdout
         return True, trace_output

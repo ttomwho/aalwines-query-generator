@@ -104,7 +104,7 @@ Input: Transparency check if a packet arriving to R1 with the service label s50 
 REGEX: <50> [.#R1] .* [R5#.] <.+ .> 1
 
 Input: Can a packet pass through a loop that includes the router Turner, with up to one link failure allowed?
-REGEX: <.*> [.#Turner] .+ [Turner#.] <.*> 1
+REGEX: <.*> [Turner#.] .+ [.#Turner] <.*> 1
 
 Input: Check if a packet can reach router V4 without passing through V0 or V1.
 REGEX: <.*> [^.#V0,.#V1]* [.#V4] <.*> 0
@@ -113,7 +113,7 @@ Input: Can a packet with top label 20 reach R3 without going through R1 along th
 REGEX: <20 .*> [^.#R1]* [.#R3] <.*> 0
 
 Input: Verify whether any packet can loop through router Germany.
-REGEX: <.*> [.#Germany] .+ [Germany#.] <.*> 0
+REGEX: <.*> [Germany#.] .+ [.#Germany] <.*> 0
 
 Input: Check if a packet entering at r1 ever exits the network with more than one label still on the stack.
 REGEX: <.*> [.#r1] .* <.+ .> 0

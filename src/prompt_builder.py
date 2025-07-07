@@ -28,6 +28,19 @@ def generate_query2(description, model, feedback=""):
         return "Error: No response from model."
     return response.choices[0].message.content.strip()
 
+def generate_answer(description):
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini-2025-04-14",
+        messages=[
+            {"role": "system", "content": "You are an AalWiNes expert which is a network verification tool for MPLS and you answer all questions that you are asked about the tool or MPLS."},
+            {"role": "user", "content": description}
+        ],
+        temperature=0.5
+    )
+    if not response.choices or not response.choices[0].message.content:
+        return "Error: No response from model."
+    return response.choices[0].message.content.strip()
+
 
 def extract_parts(query: str):
     try:
