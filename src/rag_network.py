@@ -7,6 +7,15 @@ import faiss
 from typing import List, Dict, Any
 import sys
 from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    raise EnvironmentError("❌ OPENAI_API_KEY is not set or not found in .env")
+
+client = OpenAI(api_key=api_key)
 
 sys.stdout.reconfigure(encoding='utf-8')
 
