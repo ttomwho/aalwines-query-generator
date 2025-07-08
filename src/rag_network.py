@@ -73,6 +73,10 @@ def store_embeddings_in_faiss(
 ):
     if not embedded_chunks:
         raise ValueError("No embeddings provided to store in FAISS.")
+    
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(index_path), exist_ok=True)
+
 
     first_vec = np.array(embedded_chunks[0]["embedding"], dtype=np.float32)
     dim = first_vec.shape[0]
