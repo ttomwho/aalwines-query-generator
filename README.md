@@ -68,7 +68,7 @@ This file provides an overview and documentation for the project.
 ## Example Prompts
 "Find a path from R0 to R3 with at most 1 link failure."
 "Give me a trace from v0 to v4 avoiding v2."
-"Verify if an packet with label 10 can reach v5 from v1."
+"Verify if a packet with label 10 can reach v5 from v1."
 
 Make sure to only use valid router names and labels which also appear in the chosen network model.
 
