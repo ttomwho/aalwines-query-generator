@@ -43,7 +43,7 @@ def run_aalwines(query: str, network_path: str, weight_path: str, query_path: st
         return False, result.stderr
 
 def main():
-    print("AalWiNes Query Generator (powered by Ollama + LLaMA 3)\n")
+    print("AalWiNes Query Generator\n")
 
     model = None
     while model is None:
