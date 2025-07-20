@@ -4,7 +4,7 @@ from datetime import datetime
 from prompt_builder import regenerate_full_query_until_valid, generate_answer
 from network_parser import load_network_model
 import json
-from student_query_checker import verify_semantically, is_structurally_valid, are_queries_equivalent
+from student_query_checker import verify_trace, is_structurally_valid, are_queries_equivalent
 import random
 import csv
 from filelock import FileLock
@@ -17,31 +17,9 @@ NETWORK_DIR = "networks"
 LOG_FILE = "results/usage_log.csv"
 TEST_FILE = "run/tasks.json"
 
-# --- Utility ---
-def log_usage(student_id, description, query, success, result):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    safe_result = str(result).strip().replace(chr(10), " ")
-    row = f'"{timestamp}","{student_id}","{description}","{query}","{success}","{safe_result}"\n'
-
-    lock = FileLock(LOG_FILE + ".lock")
-    with lock:
-        with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(row)
-
-def log_quiz(student_id, solution, input, success, task_number, confidence=""):
-    log_id = st.session_state.log_id
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    row = f'"{log_id},"{timestamp}","{student_id}","{solution}","{input}","{success}","{task_number}","{confidence}"\n'
-
-    lock = FileLock(LOG_FILE + ".lock")
-    with lock:
-        with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(row)
-
 
 def log_event(
     event_type,
-    student_id,
     stage,
     question_number=None,
     solution=None,
@@ -56,7 +34,6 @@ def log_event(
     row = [
         log_id,
         timestamp,
-        student_id,
         stage,
         question_number if question_number is not None else "",
         solution if solution is not None else "",
@@ -70,8 +47,7 @@ def log_event(
             writer = csv.writer(f)
             if write_header:
                 writer.writerow([
-                    "log_id", "timestamp", "student_id", "stage", "question_number", "solution"
-                    "event_type", "data"
+                    "timestamp", "log_id", "stage", "question_number", "solution", "event_type", "data"
                 ])
             writer.writerow(row)
 
@@ -224,7 +200,6 @@ if st.session_state.stage == 1:
 
 
     with st.form(key="user_information"):
-        student_id = st.text_input("Enter your student ID:")
         degree = st.selectbox("Select your degree:", 
                                     ["Bachelor", "Master"])
         semester = st.selectbox(
@@ -250,10 +225,9 @@ if st.session_state.stage == 1:
         submitted = st.form_submit_button("Submit & Start Quiz")
 
         if submitted:
-            if student_id:  # Ensure valid ID
+            if st.session_state.log_id:  # Ensure valid ID
                 log_event(
                     event_type="form_submit",
-                    student_id=student_id,
                     stage="form",
                     data={
                         "degree": degree,
@@ -265,7 +239,6 @@ if st.session_state.stage == 1:
                         "experience_aalwines": experience_aalwines
                     }
                 )
-                st.session_state.student_id = student_id
                 st.session_state.degree = degree
                 st.session_state.stage = 2
                 st.rerun()  # Refresh to show next stage
@@ -282,10 +255,10 @@ if st.session_state.stage == 2:
 
     
 
-    student_id = st.session_state.get("student_id", "")
+    log_id = st.session_state.get("log_id", "")
     degree = st.session_state.get("degree", "")
 
-    print(f"Student ID: {student_id}, Degree: {degree}")
+    print(f"ID: {log_id}, Degree: {degree}")
 
     st.markdown("---")
     with st.expander("💬 Need Help? Ask the AI Chatbot about AalWiNes or MPLS"):
@@ -305,7 +278,6 @@ if st.session_state.stage == 2:
                         st.session_state.chat_history.append(("AI", response))
                         log_event(
                             event_type="llm_chat",
-                            student_id=student_id,
                             stage="quiz",
                             data={
                                 "question": user_input,
@@ -325,7 +297,7 @@ if st.session_state.stage == 2:
                 st.markdown(f"**🤖 AI:** {msg}")
 
 
-    if student_id and degree:
+    if st.session_state.log_id and degree:
 
         if "awaiting_confidence" not in st.session_state:
             st.session_state.awaiting_confidence = False
@@ -364,13 +336,16 @@ if st.session_state.stage == 2:
         if "quiz_initialized" not in st.session_state:
             log_event(
                 event_type="quiz_started",
-                student_id=student_id,
                 stage="quiz"
             )
             st.session_state.trial_task = {
                 "task": "This is a trial task, take as much time as you need. The quiz starts after you get this question right: Write a query to check if V0 can communicate with V1 with no failures.",
                 "solution": "<.*> [.#V0] .* [V1#.] <.*> 0",
-                "model": "_DemoNet_.json"
+                "other_solutions": [],
+                "model": "_DemoNet_.json",
+                "must_contain": ["V0", "V1", "<.*>", "0"],
+                "must_not_contain": [],
+                "must_contain_any": [],
             }
             # Shuffle quiz tasks once for this student
             st.session_state.shuffled_tasks = random.sample(test_tasks, len(test_tasks))
@@ -385,7 +360,7 @@ if st.session_state.stage == 2:
             task = st.session_state.shuffled_tasks[st.session_state.task_index]
         
 
-        st.markdown(f"**Task {st.session_state.task_index + 1}/10:** {task['task']}")
+        st.markdown(f"**Task {st.session_state.task_index + 1}/13:** {task['task']}")
         st.session_state.input = st.text_input("Enter the AalWiNes query:", key="user_answer")
         
         def next_task():
@@ -395,9 +370,9 @@ if st.session_state.stage == 2:
                 return
             log_event(
                 event_type="query_entered",
-                student_id=student_id,
                 stage="quiz",
                 question_number=st.session_state.task_index + 1,
+                solution=task["solution"],
                 data={"query": user_input}
             )
             st.session_state.pending_input = user_input
@@ -418,10 +393,11 @@ if st.session_state.stage == 2:
                 task_model = os.path.join(NETWORK_DIR, task['model'])
                 print(f"User input Confidence: {user_input}")
                 is_exact = user_input.strip() == task["solution"].strip()
-                is_semantic1 = False
+                is_match = user_input.strip() in [s.strip() for group in task.get("other_solutions", []) for s in group]
+                is_trace = False
 
-                if not is_exact:
-                    is_semantic1, result_student, result_ref = verify_semantically(
+                if not is_exact or is_match:
+                    is_trace, result_student, result_ref = verify_trace(
                         user_input + " DUAL",
                         task["solution"] + " DUAL",
                         task_model,
@@ -432,16 +408,18 @@ if st.session_state.stage == 2:
                 structure_ok = is_structurally_valid(user_input, task)
                 equivalent_check = are_queries_equivalent(user_input, task["solution"])
 
-                is_semantic = (is_semantic1 and structure_ok) or equivalent_check
+                is_semantic = (is_trace and structure_ok) or equivalent_check
 
-                is_correct = is_exact or is_semantic
+                is_correct = is_exact or is_match or is_semantic
+
+                print(f"Exact match: {is_exact} and {is_match}, Trace match: {is_trace}, must_haves: {structure_ok}, Equivalent: {equivalent_check}, is_semantic: {is_semantic}, is_correct: {is_correct}")
 
                 # Log result
                 log_event(
                     event_type="answer_checked",
-                    student_id=student_id,
                     stage="quiz",
                     question_number=st.session_state.task_index + 1,
+                    solution=task["solution"],
                     data={
                         "query": user_input,
                         "is_correct": is_correct,
@@ -473,7 +451,7 @@ if st.session_state.stage == 2:
         current_task = st.session_state.task_index
 
         if not st.session_state.awaiting_confidence:
-            cols = st.columns([2, 2, 2, 12])
+            cols = st.columns([2, 2, 2, 2, 12])
             with cols[0]:
                 st.button("Check Answer", on_click=next_task)
             with cols[1]:
@@ -484,7 +462,6 @@ if st.session_state.stage == 2:
                         st.session_state.joker_tasks.add(current_task)
                         log_event(
                             event_type="joker_used",
-                            student_id=student_id,
                             stage="quiz",
                             question_number=st.session_state.task_index + 1,
                             data={"solution": task["solution"]}
@@ -497,6 +474,11 @@ if st.session_state.stage == 2:
                 if st.session_state.get("task_index", 0) > 0:
                     if st.button("Go one question back"):
                         st.session_state.task_index -= 1
+                        st.rerun()
+            with cols[4]:
+                if st.session_state.get("task_index", 0) > -1:
+                    if st.button("Skip question"):
+                        st.session_state.task_index += 1
                         st.rerun()
             with cols[2]:
                 if st.button("Use LLM"):
@@ -523,7 +505,6 @@ if st.session_state.stage == 2:
 
             log_event(
                 event_type="llm_suggested",
-                student_id=student_id,
                 stage="quiz",
                 question_number=st.session_state.task_index + 1,
                 data={"llm_suggestion": st.session_state.input}
@@ -534,7 +515,6 @@ if st.session_state.stage == 2:
                 st.button("✅ Accept and Check", on_click=next_task)
                 log_event(
                     event_type="llm_accepted",
-                    student_id=student_id,
                     stage="quiz",
                     question_number=st.session_state.task_index + 1,
                     data={"llm_suggestion": st.session_state.input}
@@ -543,7 +523,6 @@ if st.session_state.stage == 2:
                 if st.button("❌ Reject"):
                     log_event(
                         event_type="llm_rejected",
-                        student_id=student_id,
                         stage="quiz",
                         question_number=st.session_state.task_index + 1,
                         data={"llm_suggestion": st.session_state.input}
@@ -621,11 +600,9 @@ if st.session_state.stage == 3:
         FEEDBACK_FILE = "results/feedback.csv"
         if submitted:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            student_id = st.session_state.get("student_id", "anonymous")
 
             feedback_row = [
                 timestamp,
-                student_id,
                 usage,
                 usefulness,
                 reliability,
@@ -647,7 +624,6 @@ if st.session_state.stage == 3:
                 if write_header:
                     writer.writerow([
                         "timestamp",
-                        "student_id",
                         "llm_usage",
                         "llm_usefulness",
                         "llm_reliability",

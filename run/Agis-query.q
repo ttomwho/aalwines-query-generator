@@ -1,1 +1,1 @@
-<.*> [Brisbane1#.] .+ [.#Brisbane1] <.*> 0 DUAL
+<1 11> .+ [V3#.] <.+> 1 DUAL

@@ -28,11 +28,44 @@ def generate_query2(description, model, feedback=""):
         return "Error: No response from model."
     return response.choices[0].message.content.strip()
 
+aalwines_guide = """
+You are an expert on AalWiNes, a tool used for analyzing MPLS networks using a custom query language.
+
+--- AalWiNes Query Syntax Overview ---
+
+A query consists of:
+    <preCondition> path <postCondition> linkFailures
+
+Where:
+- <preCondition> and <postCondition> are regular expressions over MPLS labels, depending on the network topology (e.g. ⟨10⟩, ⟨40 .*⟩ (label 40 top of stack), ⟨50050* 3 .⟩).
+- path is a regular expression over interface transitions (e.g., [Router1#Router2], .*, [^v2#v3]*, [.#V1]).
+- linkFailures is a number indicating the maximum failed links allowed.
+
+Example:
+⟨10⟩ [.#Sydney1] .* [Brisbane1#.] ⟨.*⟩ 0
+
+This query checks if a packet with only a label 10 can enter at any interface to Sydney1, traverse any path that includes Brisbane1, and leave again, with any label and with no link failures allowed.
+
+--- Path Matching ---
+- [.#Router]: packet enters Router
+- [Router#.]: packet exits Router
+- [A#B]: packet goes from router A to B
+- [.^A#B]: packet must not go from A to B
+- .: wildcard router or interface
+- * and +: standard regex modifiers (zero or more, one or more)
+
+--- Useful Patterns ---
+- To check if a label is used in a router: ⟨label⟩ [.#Router] [Router#.] ⟨.*⟩ 0 OVER
+- To check for loops: make sure that a packet enters a router twice e.g. include [Router#.] at least twice in the path. Make sure that no self-loops are allowed, i.e. [RouterA#RouterA] is not allowed.
+
+Answer all user questions clearly, and if asked about AalWiNes or for a query, use the provided context and explain each part of the query.
+"""
+
 def generate_answer(description):
     response = client.chat.completions.create(
         model="gpt-4.1-mini-2025-04-14",
         messages=[
-            {"role": "system", "content": "You are an AalWiNes expert which is a network verification tool for MPLS and you answer all questions that you are asked about the tool or MPLS."},
+            {"role": "system", "content": aalwines_guide},
             {"role": "user", "content": description}
         ],
         temperature=0.5

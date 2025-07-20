@@ -32,7 +32,7 @@ def extract_core_trace(output_str):
     except Exception:
         return None
     
-def verify_semantically(student_query, reference_query, model_path, weight_path, query_path):
+def verify_trace(student_query, reference_query, model_path, weight_path, query_path):
     success_s, result_s = run_aalwines(student_query, model_path, weight_path, query_path)
     success_r, result_r = run_aalwines(reference_query, model_path, weight_path, query_path)
     
