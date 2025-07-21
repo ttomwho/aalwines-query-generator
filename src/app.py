@@ -144,14 +144,14 @@ if st.session_state.stage == 0:
     
         <.*> [.#Router0] .* [Router3#.] <.*> 1
     
-    | Query part    | Part          | Meaning                                        |
-    | ------------- | ------------- | ---------------------------------------------- |
-    | preCondition  | `<.*>`        | Any starting label stack                       |
-    | path          | `[.#R0]`      | Entry point into the network at router Sydney1 |
-    | path          | `.*`          | Any number of hops between the routers         |
-    | path          | `[R3#.]`      | Exit point from router Perth1                  |
-    | postCondition | `<.*>`        | Any label stack at the end                     |
-    | max_failures  | `1`           | At most one link failure allowed               |
+    | Query part    | Part               | Meaning                                        |
+    | ------------- | ------------------ | ---------------------------------------------- |
+    | preCondition  | `<.*>`             | Any starting label stack                       |
+    | path          | `[.#Router0]`      | Entry point into the network at router Sydney1 |
+    | path          | `.*`               | Any number of hops between the routers         |
+    | path          | `[Router3#.]`      | Exit point from router Perth1                  |
+    | postCondition | `<.*>`             | Any label stack at the end                     |
+    | max_failures  | `1`                | At most one link failure allowed               |
 
                 
     **Syntax Summary**\n
