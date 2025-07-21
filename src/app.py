@@ -69,7 +69,7 @@ with open(TEST_FILE, "r", encoding="utf-8") as f:
     test_tasks = json.load(f)
 # --- UI ---
 st.set_page_config(page_title="AalWiNes Query Generator", layout="wide")
-st.title("🚀 AalWiNes Query Generator Study")
+st.title("AalWiNes Query Generator Study")
 
 if "stage" not in st.session_state:
     st.session_state.stage = 0
@@ -95,7 +95,7 @@ def go_stage0():
 # --- Introduction ---
 if st.session_state.stage == 0:
     st.markdown("""
-    ### Welcome to the AalWiNes Query Generator Study
+    ### Welcome!
                 
     This study is designed to help you practice writing queries for the **AalWiNes** network verification tool.
 
@@ -156,10 +156,10 @@ if st.session_state.stage == 0:
                 
     **Syntax Summary**\n
     Paths:\n
-    [RouterA#RouterB]: means a link from A to B\n
+    [RouterA#RouterB]: means a link/hop from A to B\n
     [.#Router]: any link to Router\n
     [Router#.]: any link from Router\n
-    **.** : matches any router or label\n
+    **.** : matches any router, label or hop. \n
     *****: zero or more of the previous element\n
     **+**: one or more of the previous element\n
     **^**: negation e.g. [^.#RouterX] excludes router X from the path\n
@@ -178,7 +178,7 @@ if st.session_state.stage == 0:
     """)
     
     st.markdown(f"""
-    ### 🎁 Get Your Extra Points
+    ### Get Your Extra Points
 
     To receive your bonus points, **please copy the following ID** and submit it in the [ISIS course form](https://isis.tu-berlin.de):
 
@@ -195,7 +195,7 @@ if st.session_state.stage == 0:
 # --- Student ID ---
 if st.session_state.stage == 1:
     with st.sidebar:
-        if st.button("⬅️ Back", help="Back to the start page"):
+        if st.button("⬅️ Back to start", help="Back to the start page"):
             go_stage0()
             st.rerun()
 
@@ -279,7 +279,7 @@ if st.session_state.stage == 2:
     with st.sidebar:
         if st.button("🔄 Restart Quiz", help="Restart from the trial task"):
             restart_quiz()
-        if st.button("⬅️ Back", help="Back to the form page"):
+        if st.button("⬅️ Back to start", help="Back to the form page"):
             go_stage1()
             st.rerun()
 
@@ -322,7 +322,7 @@ if st.session_state.stage == 2:
         # Display chat history
         for sender, msg in reversed(st.session_state.chat_history[-10:]):
             if sender == "You":
-                st.markdown(f"**🧑‍🎓 You:** {msg}")
+                st.markdown(f"**🧑 You:** {msg}")
             else:
                 st.markdown(f"**🤖 AI:** {msg}")
 
@@ -344,7 +344,7 @@ if st.session_state.stage == 2:
         if "llm_generated" not in st.session_state:
             st.session_state.llm_generated = False
         
-        st.markdown("## 🎯 Quiz")
+        st.markdown("## Quiz")
 
         if st.session_state.pending_feedback:
             level, msg = st.session_state.pending_feedback
@@ -497,7 +497,7 @@ if st.session_state.stage == 2:
                         st.session_state.input_2 = ""
                     else:
                         st.balloons()
-                        st.success("🎓 You've completed all tasks!")
+                        st.success("You've completed all tasks!")
                         st.session_state.stage = 3
                 st.rerun()
 
@@ -509,7 +509,7 @@ if st.session_state.stage == 2:
                 st.button("Check Answer", on_click=next_task)
             with cols[1]:
                 if st.session_state.joker_uses < 3:
-                    if st.button("🃏 Show Solution"):
+                    if st.button("Show Solution"):
                         if current_task != -1:
                             st.session_state.joker_uses += 1
                         st.session_state.joker_tasks.add(current_task)
@@ -522,7 +522,7 @@ if st.session_state.stage == 2:
                         st.rerun()
                     st.caption(f"{3 - st.session_state.joker_uses} joker(s) remaining")
                 else:
-                    st.caption("🃏 No jokers remaining")
+                    st.caption("No jokers remaining")
             with cols[3]:
                 if st.session_state.get("task_index", 0) > 0:
                     if st.button("Go one question back"):
@@ -564,7 +564,7 @@ if st.session_state.stage == 2:
 
         # Show LLM Output and Accept/Reject UI
         if st.session_state.llm_generated and st.session_state.llm_suggestion:
-            st.markdown("#### 💡 Suggested query:")
+            st.markdown("#### AI suggested query:")
             st.code(st.session_state.llm_suggestion, language="text")
 
             log_event(
@@ -590,13 +590,11 @@ if st.session_state.stage == 2:
                     st.session_state.llm_generated = False
                     st.rerun()
 
-        st.write("To visualize the network and get results for your queries, you can use the [AalWiNes Demo](https://demo.aalwines.cs.aau.dk/).")
-
         if st.button("Finish quiz & go to feedback page", help="Go to the feedback page"):
             go_stage3()
             st.rerun()
     else:
-        st.warning("Please enter your student ID and select a network to continue.")
+        st.warning("Please enter a degree to continue.")
 
 if st.session_state.stage == 3:
     with st.sidebar:
