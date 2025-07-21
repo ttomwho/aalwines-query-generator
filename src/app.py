@@ -99,7 +99,7 @@ if st.session_state.stage == 0:
                 
     This study is designed to help you practice writing queries for the **AalWiNes** network verification tool.
 
-    You will solve **10 network verification tasks** using the **AalWiNes query language**. For each task, you may:
+    You will solve **13 network verification tasks** using the **AalWiNes query language**. For each task, you may:
 
     - Write the query manually based on your understanding of the syntax, **or**
     - Use the **LLM-powered Query Generator** integrated into this app to help you.
@@ -142,41 +142,43 @@ if st.session_state.stage == 0:
     
     Example:
     
-        <.> [.#R0] . [R3#.] <.*> 1
+        <.*> [.#Router0] .* [Router3#.] <.*> 1
     
-    | Part          | Meaning                                        |
-    | ------------- | ---------------------------------------------- |
-    | `<.*>`        | Any starting label stack                       |
-    | `[.#R0]`      | Entry point into the network at router Sydney1 |
-    | `.*`          | Any number of hops between the routers         |
-    | `[R3#.]`      | Exit point from router Perth1                  |
-    | `<.*>`        | Any label stack at the end                     |
-    | `1`           | At most one link failure allowed               |
+    | Query part    | Part          | Meaning                                        |
+    | ------------- | ------------- | ---------------------------------------------- |
+    | preCondition  | `<.*>`        | Any starting label stack                       |
+    | path          | `[.#R0]`      | Entry point into the network at router Sydney1 |
+    | path          | `.*`          | Any number of hops between the routers         |
+    | path          | `[R3#.]`      | Exit point from router Perth1                  |
+    | postCondition | `<.*>`        | Any label stack at the end                     |
+    | max_failures  | `1`           | At most one link failure allowed               |
 
                 
-    **Syntax Summary**
-    Router paths: [RouterA#RouterB] means a link from A to B\n
+    **Syntax Summary**\n
+    Paths:\n
+    [RouterA#RouterB]: means a link from A to B\n
     [.#Router]: any link to Router\n
     [Router#.]: any link from Router\n
-    Wildcard: .* matches any path\n
-    Negation: [^.#RouterX] excludes a router from the path\n
+    **.** : matches any router or label\n
+    *****: zero or more of the previous element\n
+    **+**: one or more of the previous element\n
+    **^**: negation e.g. [^.#RouterX] excludes router X from the path\n
     Labels:\n
-    <10> means the label is 10\n
-    <.*> means any label stack (This is the default if nothing is specified in the task)\n
+    <10>: means the label is 10\n
+    <.*>: means any label stack **(Important: This is the default if nothing is specified in the task)**\n
     Failures: The number at the end (e.g. 1) allows that many link failures\n
 
     **How it works:**
-    1. Enter your student ID and experience level.
-    2. Complete a series of tasks to practice writing queries.
-    3. Select a network model for the LLM Assistant.
-    4. Use the LLM assistant to generate and run queries based on your descriptions and network model.
-    5. Provide feedback on your experience at the end.
+    1. Answer a short form and enter your experience level.
+    2. Quiz: Complete a series of 13 tasks to practice writing queries.
+    3. Optionally use the LLM assistant to generate the queries.
+    4. Provide feedback on your experience using the LLM assisstant at the end.
     
     Let's get started! Click "Start Study" below to begin.
     """)
     
     st.markdown(f"""
-    ### 🎁 Redeem Your Extra Points
+    ### 🎁 Get Your Extra Points
 
     To receive your bonus points, **please copy the following ID** and submit it in the [ISIS course form](https://isis.tu-berlin.de):
 
@@ -217,10 +219,38 @@ if st.session_state.stage == 1:
         ]
 
         experience_llms = st.radio("How often do you use LLMs like ChatGPT in your life?", likert_options)
-        experience_programming = st.slider("Select your experience level in programming:",min_value=1,max_value=10,value=3,format="%d")
-        experience_networks = st.slider("Select your experience level with communication networks:",min_value=1,max_value=10,value=3,format="%d")
-        experience_mpls = st.slider("Select your experience level with the MPLS routing technique:",min_value=1,max_value=10,value=3,format="%d")
-        experience_aalwines = st.slider("Select your experience level with network verification tools like AalWiNes:",min_value=1,max_value=10,value=3,format="%d")
+        experience_programming = st.slider(
+            "Programming experience:",
+            min_value=0,
+            max_value=3,
+            value=1,
+            format="%d",
+            help="0 = No knowledge, 1 = Beginner, 2 = Intermediate, 3 = Advanced"
+        )
+        experience_networks = st.slider(
+            "Experience with communication networks:",
+            min_value=0,
+            max_value=3,
+            value=1,
+            format="%d",
+            help="0 = No knowledge, 1 = Beginner, 2 = Intermediate, 3 = Advanced"
+        )
+        experience_mpls = st.slider(
+            "Experience with MPLS routing technique:",
+            min_value=0,
+            max_value=3,
+            value=1,
+            format="%d",
+            help="0 = No knowledge, 1 = Beginner, 2 = Intermediate, 3 = Advanced"
+        )
+        experience_aalwines = st.slider(
+            "Experience with network verification tools like AalWiNes:",
+            min_value=0,
+            max_value=3,
+            value=1,
+            format="%d",
+            help="0 = No knowledge, 1 = Beginner, 2 = Intermediate, 3 = Advanced"
+        )
 
         submitted = st.form_submit_button("Submit & Start Quiz")
 
@@ -359,9 +389,25 @@ if st.session_state.stage == 2:
         else:
             task = st.session_state.shuffled_tasks[st.session_state.task_index]
         
+        if st.session_state.get("change_input_flag", False):
+            st.session_state.input = st.session_state.input_2
+            st.session_state.change_input_flag = False
+
+        
+
 
         st.markdown(f"**Task {st.session_state.task_index + 1}/13:** {task['task']}")
-        st.session_state.input = st.text_input("Enter the AalWiNes query:", key="user_answer")
+        if task["model"] is not "":
+            st.markdown(
+                f"""
+                <div style='margin-left: 72px; font-size: 0.9em; margin-top: -15px; margin-bottom: 16px;'>
+                -> This task is based on this network model: <b>{task['model'][:-5]}</b>.
+                You can find it in the <a href='https://demo.aalwines.cs.aau.dk/' target='_blank'>AalWiNes Demo</a> to visualize the network and get results for your queries.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        user_query = st.text_input("Enter the AalWiNes query: \n(You may do this yourself, use the LLM assisstant or use one of your three jokers)", key="input")
         
         def next_task():
             user_input = st.session_state.input.strip()
@@ -377,8 +423,11 @@ if st.session_state.stage == 2:
             )
             st.session_state.pending_input = user_input
             st.session_state.awaiting_confidence = True
-            st.session_state.input = None
             st.session_state.llm_generated = False
+
+        if st.session_state.get("check_llm", False):
+            next_task()
+            st.session_state.check_llm = False
 
         if st.session_state.awaiting_confidence:
             st.markdown("### 🤔 How confident are you in your answer?")
@@ -431,9 +480,11 @@ if st.session_state.stage == 2:
 
                 # Feedback AFTER confidence
                 if is_correct:
-                    st.session_state.pending_feedback = ("success", "✅ Correct!")
+                    st.session_state.pending_feedback = ("success", "✅ Correct! Next task.")
+                    st.session_state.change_input_flag = True
+                    st.session_state.input_2 = ""
                 else:
-                    st.session_state.pending_feedback = ("error", "❌ Incorrect.")
+                    st.session_state.pending_feedback = ("error", "❌ Incorrect. Try again.")
 
                 # Reset
                 st.session_state.awaiting_confidence = False
@@ -442,6 +493,8 @@ if st.session_state.stage == 2:
                 if is_correct:
                     if st.session_state.task_index < len(test_tasks) - 1:
                         st.session_state.task_index += 1
+                        st.session_state.change_input_flag = True
+                        st.session_state.input_2 = ""
                     else:
                         st.balloons()
                         st.success("🎓 You've completed all tasks!")
@@ -486,7 +539,7 @@ if st.session_state.stage == 2:
                         task_model = os.path.join(NETWORK_DIR, task['model'])
                         model = load_network_model(task_model)
                         llm_query = regenerate_full_query_until_valid(task['task'], model)
-                        st.session_state.input = llm_query[:-5]
+                        st.session_state.llm_suggestion = llm_query[:-5]
                         st.session_state.llm_generated = True
                     except Exception as e:
                         st.error(f"LLM generation failed: {e}")
@@ -498,27 +551,33 @@ if st.session_state.stage == 2:
         if st.session_state.task_index >= 0:
             st.progress((st.session_state.task_index) / len(test_tasks))
 
+        def accept_llm_and_check():
+            log_event(
+                    event_type="llm_accepted",
+                    stage="quiz",
+                    question_number=st.session_state.task_index + 1,
+                    data={"llm_suggestion": st.session_state.llm_suggestion}
+                )
+            st.session_state.input_2 = st.session_state.llm_suggestion
+            st.session_state.change_input_flag = True
+            st.session_state.check_llm = True
+
         # Show LLM Output and Accept/Reject UI
-        if st.session_state.llm_generated and st.session_state.input:
+        if st.session_state.llm_generated and st.session_state.llm_suggestion:
             st.markdown("#### 💡 Suggested query:")
-            st.code(st.session_state.input, language="text")
+            st.code(st.session_state.llm_suggestion, language="text")
 
             log_event(
                 event_type="llm_suggested",
                 stage="quiz",
                 question_number=st.session_state.task_index + 1,
-                data={"llm_suggestion": st.session_state.input}
+                data={"llm_suggestion": st.session_state.llm_suggestion}
             )
 
             col1, col2 = st.columns([1, 6])
             with col1:
-                st.button("✅ Accept and Check", on_click=next_task)
-                log_event(
-                    event_type="llm_accepted",
-                    stage="quiz",
-                    question_number=st.session_state.task_index + 1,
-                    data={"llm_suggestion": st.session_state.input}
-                )
+                st.button("✅ Accept and Check LLM output", on_click=accept_llm_and_check)
+                
             with col2:
                 if st.button("❌ Reject"):
                     log_event(
