@@ -397,7 +397,7 @@ if st.session_state.stage == 2:
 
 
         st.markdown(f"**Task {st.session_state.task_index + 1}/13:** {task['task']}")
-        if task["model"] is not "":
+        if task["model"] != "":
             st.markdown(
                 f"""
                 <div style='margin-left: 72px; font-size: 0.9em; margin-top: -15px; margin-bottom: 16px;'>
@@ -442,8 +442,11 @@ if st.session_state.stage == 2:
                 task_model = os.path.join(NETWORK_DIR, task['model'])
                 print(f"User input Confidence: {user_input}")
                 is_exact = user_input.strip() == task["solution"].strip()
-                is_match = user_input.strip() in [s.strip() for group in task.get("other_solutions", []) for s in group]
+                for t in task["other_solutions"]:
+                    is_match = user_input.strip() in [s.strip() for group in task.get("other_solutions", []) for s in group]
                 is_trace = False
+
+            
 
                 if not is_exact or is_match:
                     is_trace, result_student, result_ref = verify_trace(
@@ -459,6 +462,15 @@ if st.session_state.stage == 2:
 
                 is_semantic = (is_trace and structure_ok) or equivalent_check
 
+                is_correct = is_exact or is_match or is_semantic
+
+                if not is_correct:
+                    for group in task.get("other_solutions", []):
+                        for t in group:
+                            print(f"Checking against other solution: {t}")
+                            equivalent_check = are_queries_equivalent(user_input, t)
+
+                is_semantic = (is_trace and structure_ok) or equivalent_check
                 is_correct = is_exact or is_match or is_semantic
 
                 print(f"Exact match: {is_exact} and {is_match}, Trace match: {is_trace}, must_haves: {structure_ok}, Equivalent: {equivalent_check}, is_semantic: {is_semantic}, is_correct: {is_correct}")
@@ -614,7 +626,7 @@ if st.session_state.stage == 3:
         )
 
         usefulness = st.slider(
-            "How useful was the LLM assistant in helping you solve the tasks?",
+            "How useful was the LLM assistant in speeding up your work to solve the tasks?",
             1, 5, 3,
             format="%d (1 = Not useful at all, 5 = Very useful)"
         )
@@ -626,18 +638,18 @@ if st.session_state.stage == 3:
         )
 
         usage_bot = st.radio(
-            "How often did you use the Chatbot during the quiz?",
+            "How often did you use the AI Chatbot during the quiz?",
             ["Never", "1–5 times", "More than 5 times"]
         )
 
         familiarity = st.radio(
             "Did you become more familiar with the AalWiNes query syntax over time?",
-            ["Yes, I got used to it", "Somewhat", "Not really", "I still find it confusing"]
+            ["Yes, a lot", "Yes, a little bit", "Not at all"]
         )
 
         learning_factors = st.multiselect(
             "What helped you most in learning the syntax?",
-            ["Introduction page", "LLM assistant", "LLM chatbot", "Experimenting with the tool during trial task", "Personal prior knowledge", "Other"]
+            ["Introduction page", "LLM assistant", "AI Chatbot", "Experimenting with the tool during trial task", "Personal prior knowledge", "Other"]
         )
 
         struggle_points = st.text_area(
@@ -649,7 +661,7 @@ if st.session_state.stage == 3:
         )
 
         future_use = st.radio(
-            "Would you consider using a LLM query assistant in future network tools?",
+            "Would you consider using a LLM query assistant in other network tools?",
             ["Yes", "Maybe", "No"]
         )
 
