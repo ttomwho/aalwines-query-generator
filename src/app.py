@@ -440,6 +440,7 @@ if st.session_state.stage == 2:
             if st.button("Submit Confidence"):
                 user_input = st.session_state.pending_input
                 task_model = os.path.join(NETWORK_DIR, task['model'])
+                is_match = False
                 print(f"User input Confidence: {user_input}")
                 is_exact = user_input.strip() == task["solution"].strip()
                 for t in task["other_solutions"]:
