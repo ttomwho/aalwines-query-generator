@@ -109,6 +109,7 @@ if st.session_state.stage == 0:
     #### Quiz Information
 
     You will begin with **one trial task** to explore the interface.  
+                
     Take your time and get familiar with the UI before starting the quiz.
                 
     For general questions about the AalWiNes tool or the query language, you can use the **AI Chatbot** which will be available during the quiz.
@@ -410,7 +411,7 @@ if st.session_state.stage == 2:
         user_query = st.text_input("Enter the AalWiNes query: \n(You may do this yourself, use the LLM assisstant or use one of your three jokers)", key="input")
         
         def next_task():
-            user_input = st.session_state.input.strip()
+            user_input = st.session_state.input
             if not user_input:
                 st.warning("Please enter a query before continuing.")
                 return
